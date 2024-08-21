@@ -1,0 +1,46 @@
+version: '3.1'
+services:
+  mysql-dept-employee-microservice:
+    image: mysql:8.0
+    container_name: container_mysql-dept-employee-microservice
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: microservice_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
+
+  phpmyadmin-dept-employee-microservice:
+    container_name: container_phpmyadmin-dept-employee-microservice
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - '8085:80'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      PMA_HOST: mysql-dept-employee-microservice
+      PMA_USER: user
+      PMA_PASSWORD: user
+    depends_on:
+      - mysql-dept-employee-microservice
+    restart: unless-stopped
+
+  zipkin-dept-employee-microservice:
+    container_name: zipkin-dept-employee-microservice
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - zipkin
+networks:
+  zipkin:
+    driver: bridge
+
+
+volumes:
+  mysql_data:
+    driver: local
